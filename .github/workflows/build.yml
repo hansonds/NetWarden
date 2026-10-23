@@ -1,0 +1,78 @@
+name: Build NetWarden
+
+# Runs when you press "Run workflow" on the Actions tab,
+# and also automatically whenever code is pushed to main.
+on:
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: "Also publish a GitHub Release with the zip"
+        type: boolean
+        default: false
+  push:
+    branches: [ main ]
+    paths: [ "src/**", ".github/workflows/**" ]
+
+permissions:
+  contents: write   # needed only to create releases
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Read version from Program.cs
+        id: ver
+        shell: pwsh
+        run: |
+          $m = Select-String -Path src/Program.cs -Pattern 'Version = "([0-9.]+)"' | Select-Object -First 1
+          if (-not $m) { throw "Could not find Version in src/Program.cs" }
+          $v = $m.Matches[0].Groups[1].Value
+          "version=$v" >> $env:GITHUB_OUTPUT
+          Write-Host "Building NetWarden v$v"
+
+      - name: Build NetWarden.exe
+        shell: pwsh
+        run: dotnet build src/NetWarden.csproj -c Release -o build-out
+
+      - name: Package zip
+        shell: pwsh
+        run: |
+          $v = "${{ steps.ver.outputs.version }}"
+          $dir = "package/NetWarden"
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          Copy-Item build-out/NetWarden.exe, build-out/NetWarden.exe.config $dir
+          Copy-Item LICENSE, src/WinDivert-LICENSE.txt $dir
+          @"
+          NetWarden v$v
+          ===============
+          Lightweight per-app bandwidth monitor, limiter and blocker for Windows 10/11 (64-bit).
+
+          1. Run NetWarden.exe
+          2. Click Yes on the administrator prompt.
+
+          Project page: https://github.com/${{ github.repository }}
+          "@ | Set-Content "$dir/README.txt" -Encoding UTF8
+          Compress-Archive -Path $dir -DestinationPath "NetWarden-v$v.zip" -Force
+          Get-ChildItem NetWarden-v$v.zip
+
+      - name: Upload build (download it from the run page)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NetWarden-v${{ steps.ver.outputs.version }}
+          path: package/NetWarden/
+
+      - name: Publish GitHub Release
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.create_release }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}
+          name: NetWarden v${{ steps.ver.outputs.version }}
+          files: NetWarden-v${{ steps.ver.outputs.version }}.zip
+          body: |
+            **Download `NetWarden-v${{ steps.ver.outputs.version }}.zip`**, extract it and run `NetWarden.exe` as administrator.
+
+            Requirements: Windows 10/11, 64-bit (Intel/AMD).
