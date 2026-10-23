@@ -9,6 +9,7 @@
 See which apps use your internet, cap their speed, or block them — from a single ~260 KB portable EXE.
 
 [![Download](https://img.shields.io/github/v/release/hansonds/NetWarden?label=Download&style=for-the-badge&color=3B7BFF)](https://github.com/hansonds/NetWarden/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/hansonds/NetWarden/build.yml?style=for-the-badge&label=Build)](https://github.com/hansonds/NetWarden/actions/workflows/build.yml)
 ![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?style=for-the-badge&logo=windows)
 ![Size](https://img.shields.io/badge/size-~260%20KB-35D49A?style=for-the-badge)
 ![Portable](https://img.shields.io/badge/install-not%20needed-FF8B3D?style=for-the-badge)
@@ -132,6 +133,9 @@ No — local (localhost) traffic is ignored; only real network traffic is counte
 
 The app is C# (WinForms, .NET Framework 4.8) with no external dependencies.
 
+**On GitHub (no software needed):** go to **Actions → Build NetWarden → Run workflow**.
+The finished `NetWarden.exe` appears under *Artifacts* on the run page. Tick *Also publish a GitHub Release* to publish it to Releases automatically. The version number comes from `src/Program.cs`.
+
 **Windows** (Visual Studio 2022 or .NET SDK):
 ```
 dotnet build src/NetWarden.csproj -c Release
@@ -140,6 +144,7 @@ dotnet build src/NetWarden.csproj -c Release
 **Linux** (cross-build): `build/build.sh` — uses the .NET SDK's C# compiler with Mono's .NET Framework reference assemblies.
 
 ```
+.github/workflows/build.yml   GitHub Actions build
 src/
 ├── Program.cs     startup, admin check, driver unpacking
 ├── Engine.cs      packet capture, app matching, shaping, hotspot
