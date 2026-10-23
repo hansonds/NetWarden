@@ -14,6 +14,8 @@ See which apps use your internet, cap their speed, or block them — from a sing
 ![Size](https://img.shields.io/badge/size-~260%20KB-35D49A?style=for-the-badge)
 ![Portable](https://img.shields.io/badge/install-not%20needed-FF8B3D?style=for-the-badge)
 
+**[⬇️ Download](https://github.com/hansonds/NetWarden/releases/latest)** · [Features](#-features) · [Screenshots](#-screenshots) · [How to use](#-how-to-use) · [FAQ](#-faq) · [Changelog](#-changelog)
+
 <img src="screenshots/main.png" alt="NetWarden main window" width="900">
 
 </div>
@@ -55,11 +57,11 @@ See which apps use your internet, cap their speed, or block them — from a sing
 
 ## 📥 Download & run
 
-1. Go to **[Releases](https://github.com/hansonds/NetWarden/releases/latest)** and download `NetWarden-vX.X.X.zip`.
+1. Go to **[Releases](https://github.com/hansonds/NetWarden/releases/latest)** and download the latest `NetWarden-vX.X.X.zip`.
 2. Extract it anywhere (e.g. `C:\Tools\NetWarden`).
 3. Run **`NetWarden.exe`** and click **Yes** on the administrator prompt.
 
-That's it — no installation.
+That's it — no installation. To update, close NetWarden (tray icon → **Exit**) and replace the EXE. Your rules are kept.
 
 > **Requirements:** Windows 10 or 11, 64-bit (Intel/AMD). Administrator rights.
 > ARM-based Windows PCs are not supported.
@@ -122,6 +124,18 @@ Brand-new connections for a second or two before Windows reports which app owns 
 </details>
 
 <details>
+<summary><b>Where is NetWarden when I close the window?</b></summary>
+
+It keeps running in the system tray so your limits stay active. Right-click the tray icon → **Exit** to close it completely. You can change this in ☰ → *Close button minimizes to tray*.
+</details>
+
+<details>
+<summary><b>How do I remove it completely?</b></summary>
+
+Turn off ☰ → *Start with Windows*, exit NetWarden, then delete its folder, `%AppData%\NetWarden` and `C:\ProgramData\NetWarden`. Nothing else is left on the system.
+</details>
+
+<details>
 <summary><b>Does it limit traffic between apps on the same PC?</b></summary>
 
 No — local (localhost) traffic is ignored; only real network traffic is counted and limited.
@@ -129,13 +143,42 @@ No — local (localhost) traffic is ignored; only real network traffic is counte
 
 ---
 
+## 📝 Changelog
+
+**v1.1.0**
+- 📶 Mobile Hotspot traffic now appears as its own entry (instead of "Unknown") and can be limited or blocked
+- Uploads from hotspot devices are now counted
+
+**v1.0.3**
+- Right-click menu fixed: limit, block/unblock, remove rule, open file location, copy path
+
+**v1.0.2**
+- Unit dropdown for every limit: B/s … GB/s and bit/s … Gbit/s (default KB/s)
+
+**v1.0.1**
+- New flicker-free app list with hover highlight, smooth scrolling and keyboard navigation
+
+**v1.0.0**
+- First release: live per-app monitoring, per-app and global speed limits, blocking, connections view, tray mode, Start with Windows
+
+---
+
 ## 🛠️ Build from source
 
 The app is C# (WinForms, .NET Framework 4.8) with no external dependencies.
 
-**On GitHub (no software needed):** go to **Actions → Build NetWarden → Run workflow**.
-The finished `NetWarden.exe` appears under *Artifacts* on the run page. Tick *Also publish a GitHub Release* to publish it to Releases automatically. The version number comes from `src/Program.cs`.
+### On GitHub (no software needed)
+Go to **Actions → Build NetWarden → Run workflow**. About 2 minutes later the new zip appears on the **[Releases](https://github.com/hansonds/NetWarden/releases)** page automatically (and under *Artifacts* on the run page).
 
+A build also runs automatically whenever files in `src/` change.
+
+**Releasing a new version**
+1. Edit `src/Program.cs` and change `Version = "1.1.0"` to the new number (e.g. `1.2.0`).
+2. Commit. The workflow builds it and publishes the **v1.2.0** release by itself.
+
+> If the release step fails, open **Settings → Actions → General → Workflow permissions**, choose **Read and write permissions**, and run the workflow again.
+
+### On your own PC
 **Windows** (Visual Studio 2022 or .NET SDK):
 ```
 dotnet build src/NetWarden.csproj -c Release
@@ -143,15 +186,17 @@ dotnet build src/NetWarden.csproj -c Release
 
 **Linux** (cross-build): `build/build.sh` — uses the .NET SDK's C# compiler with Mono's .NET Framework reference assemblies.
 
+### Project layout
 ```
-.github/workflows/build.yml   GitHub Actions build
+.github/workflows/build.yml   automatic build + release
 src/
-├── Program.cs     startup, admin check, driver unpacking
+├── Program.cs     startup, admin check, driver unpacking, version number
 ├── Engine.cs      packet capture, app matching, shaping, hotspot
 ├── Native.cs      WinDivert + Windows API interop
 ├── Config.cs      rules/settings, Start-with-Windows task
 ├── MainForm.cs    main window, dialogs
 └── Theme.cs       dark theme, custom list, graph, unit picker
+screenshots/       images used in this README
 ```
 
 ---
